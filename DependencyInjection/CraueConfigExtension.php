@@ -45,9 +45,9 @@ class CraueConfigExtension extends Extension {
         $cacheHandler = NULL;
         switch ($cache) {
             case "apc":
-                $cacheHandler = '\Doctrine\Common\Cache\ApcCache';
+                $cacheHandler = "Doctrine\\Common\\Cache\\ApcCache";
             default:
-                $cacheHandler = '\Doctrine\Common\Cache\ApcCache';
+                $cacheHandler = "Doctrine\\Common\\Cache\\ArrayCache";
         }
 
         $definition = new \Symfony\Component\DependencyInjection\Definition($cacheHandler);
