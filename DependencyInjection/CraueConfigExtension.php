@@ -18,47 +18,51 @@ use Symfony\Component\Config\Definition\Processor,
  */
 class CraueConfigExtension extends Extension {
 
-	/**
-	 * {@inheritDoc}
-	 */
-	public function load(array $config, ContainerBuilder $container) {
+    /**
+     * {@inheritDoc}
+     */
+    public function load(array $config, ContainerBuilder $container) {
         $processor = new Processor();
         $configuration = new Configuration();
-        
+
         $configs = $processor->processConfiguration($configuration, $config);
-        
-		$loader = new XmlFileLoader($container, new FileLocator(__DIR__.'/../Resources/config'));
-		$loader->load('twig.xml');
-		$loader->load('util.xml');
-        
-        if( $configs['cache'] !== FALSE){
-            $this->initializeCache( strtolower($configs['cache']), $container);
+
+        $loader = new XmlFileLoader($container, new FileLocator(__DIR__ . '/../Resources/config'));
+        $loader->load('twig.xml');
+        $loader->load('util.xml');
+
+        if ($configs['cache'] !== FALSE) {
+            $this->initializeCache(strtolower($configs['cache']), $container);
         }
-	}
-    
-    private function initializeCache($cache,ContainerBuilder $container){
-        if( !$this->isSupported($cache) ){
+    }
+
+    private function initializeCache($cache, ContainerBuilder $container) {
+        if (!$this->isSupported($cache)) {
             $msg = sprintf("The cache %s is not supported", $cache);
             throw new \InvalidArgumentException($msg);
         }
-        
+
         $cacheHandler = NULL;
-        switch ($cache){
+        switch ($cache) {
             case "apc":
-                $cacheHandler = new \Doctrine\Common\Cache\ApcCache();
+                $cacheHandler = '\Doctrine\Common\Cache\ApcCache';
             default:
-                $cacheHandler = new \Doctrine\Common\Cache\ArrayCache();
+                $cacheHandler = '\Doctrine\Common\Cache\ApcCache';
         }
-        
+
+        $definition = new \Symfony\Component\DependencyInjection\Definition($cacheHandler);
+        $container->setDefinition("craue_cache_handler", $definition);
+
         $container->getDefinition('craue_config')
-                ->addMethodCall('setCacheHandler', array($cacheHandler));
+                ->addMethodCall('setCacheHandler', array(new \Symfony\Component\DependencyInjection\Reference('craue_cache_handler')));
     }
-    
-    private function isSupported($cache){
-        $supportedCaches = array( "apc", "array");
-        
-        if(in_array($cache, $supportedCaches))
-                return TRUE;
+
+    private function isSupported($cache) {
+        $supportedCaches = array("apc", "array");
+
+        if (in_array($cache, $supportedCaches))
+            return TRUE;
         return FALSE;
     }
+
 }
