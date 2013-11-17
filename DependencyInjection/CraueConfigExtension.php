@@ -28,7 +28,7 @@ class CraueConfigExtension extends Extension {
         $configuration = new Configuration();
 
         $configs = $processor->processConfiguration($configuration, $config);
-        var_dump($configs);
+        
         $loader = new XmlFileLoader($container, new FileLocator(__DIR__ . '/../Resources/config'));
         $loader->load('twig.xml');
         $loader->load('util.xml');
@@ -48,6 +48,7 @@ class CraueConfigExtension extends Extension {
         switch ($cache) {
             case "apc":
                 $cacheHandler = "Doctrine\\Common\\Cache\\ApcCache";
+                break;
             default:
                 $cacheHandler = "Doctrine\\Common\\Cache\\ArrayCache";
         }
