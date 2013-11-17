@@ -51,7 +51,7 @@ class CraueConfigExtension extends Extension {
         }
         
         $container->getDefinition('craue_config')
-                ->addMethodCall('setCacheHandler', $cacheHandler);
+                ->addMethodCall('setCacheHandler', array($cacheHandler));
     }
     
     private function isSupported($cache){
