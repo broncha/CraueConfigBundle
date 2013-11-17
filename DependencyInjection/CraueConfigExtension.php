@@ -5,7 +5,9 @@ namespace Craue\ConfigBundle\DependencyInjection;
 use Symfony\Component\Config\Definition\Processor,
     Symfony\Component\Config\FileLocator,
     Symfony\Component\DependencyInjection\ContainerBuilder,
+    Symfony\Component\DependencyInjection\Definition,
     Symfony\Component\DependencyInjection\Loader\XmlFileLoader,
+    Symfony\Component\DependencyInjection\Reference,
     Symfony\Component\HttpKernel\DependencyInjection\Extension;
 
 /**
@@ -26,7 +28,7 @@ class CraueConfigExtension extends Extension {
         $configuration = new Configuration();
 
         $configs = $processor->processConfiguration($configuration, $config);
-
+        var_dump($configs);
         $loader = new XmlFileLoader($container, new FileLocator(__DIR__ . '/../Resources/config'));
         $loader->load('twig.xml');
         $loader->load('util.xml');
@@ -50,11 +52,11 @@ class CraueConfigExtension extends Extension {
                 $cacheHandler = "Doctrine\\Common\\Cache\\ArrayCache";
         }
 
-        $definition = new \Symfony\Component\DependencyInjection\Definition($cacheHandler);
+        $definition = new Definition($cacheHandler);
         $container->setDefinition("craue_cache_handler", $definition);
 
         $container->getDefinition('craue_config')
-                ->addMethodCall('setCacheHandler', array(new \Symfony\Component\DependencyInjection\Reference('craue_cache_handler')));
+                ->addMethodCall('setCacheHandler', array(new Reference('craue_cache_handler')));
     }
 
     private function isSupported($cache) {
