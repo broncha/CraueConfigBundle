@@ -19,6 +19,7 @@ class Configuration implements ConfigurationInterface{
             ->children()
                 ->scalarNode('cache')
                     ->treatNullLike(FALSE)
+                    ->defaultValue(NULL)
                 ->end()
             ->end();
         
