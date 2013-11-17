@@ -25,14 +25,14 @@ class CraueConfigExtension extends Extension {
         $processor = new Processor();
         $configuration = new Configuration();
         
-        $config = $processor->processConfiguration($configuration, $configs);
+        $configs = $processor->processConfiguration($configuration, $config);
         
 		$loader = new XmlFileLoader($container, new FileLocator(__DIR__.'/../Resources/config'));
 		$loader->load('twig.xml');
 		$loader->load('util.xml');
         
-        if( $config['cache'] !== FALSE){
-            $this->initializeCache( strtolower($config['cache']), $container);
+        if( $configs['cache'] !== FALSE){
+            $this->initializeCache( strtolower($configs['cache']), $container);
         }
 	}
     
