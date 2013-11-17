@@ -59,6 +59,7 @@ class Config {
 			throw $this->createNotFoundException($name);
 		}
 
+        $this->setCache($name, $setting->getValue());
 		return $setting->getValue();
 	}
 
@@ -106,6 +107,7 @@ class Config {
 			}
 
 			$settings[$name]->setValue($value);
+            $this->setCache($name, $value);
 		}
 
 		$this->em->flush();
@@ -119,6 +121,7 @@ class Config {
 
 		foreach ($this->getRepo()->findAll() as $setting) {
 			$settings[$setting->getName()] = $setting->getValue();
+            $this->setCache($setting->getName(), $setting->getValue());
 		}
 
 		return $settings;
