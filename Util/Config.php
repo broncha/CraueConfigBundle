@@ -2,12 +2,15 @@
 
 namespace Craue\ConfigBundle\Util;
 
-use Craue\ConfigBundle\Entity\Setting;
-use Doctrine\ORM\EntityManager;
-use Doctrine\ORM\EntityRepository;
+use Craue\ConfigBundle\Entity\Setting,
+    Doctrine\Common\Cache\Cache,
+    Doctrine\ORM\EntityManager,
+    Doctrine\ORM\EntityRepository,
+    RuntimeException;
 
 /**
  * @author Christian Raue <christian.raue@gmail.com>
+ * @author Broncha <broncha@rajesharma.com>
  * @copyright 2011-2013 Christian Raue
  * @license http://www.opensource.org/licenses/mit-license.php MIT License
  */
@@ -22,6 +25,17 @@ class Config {
 	 * @var EntityRepository
 	 */
 	protected $repo;
+    
+    /**
+     * @var Cache
+     */
+    private $cacheHandler;
+    
+    /**
+     *
+     * @var boolean
+     */
+    private $cacheEnabled = FALSE;
 
 	public function setEntityManager(EntityManager $em) {
 		$this->em = $em;
@@ -30,9 +44,13 @@ class Config {
 	/**
 	 * @param string $name Name of the setting.
 	 * @return string|null Value of the setting.
-	 * @throws \RuntimeException If setting is not defined.
+	 * @throws RuntimeException If setting is not defined.
 	 */
 	public function get($name) {
+        if( $this->getCache($name) ){
+            return $this->getCache($name);
+        }
+        
 		$setting = $this->getRepo()->findOneBy(array(
 			'name' => $name,
 		));
@@ -47,7 +65,7 @@ class Config {
 	/**
 	 * @param string $name Name of the setting to update.
 	 * @param string|null $value New value for the setting.
-	 * @throws \RuntimeException If the setting is not defined.
+	 * @throws RuntimeException If the setting is not defined.
 	 */
 	public function set($name, $value) {
 		$setting = $this->getRepo()->findOneBy(array(
@@ -60,11 +78,14 @@ class Config {
 
 		$setting->setValue($value);
 		$this->em->flush($setting);
+        
+        $this->setCache($name, $value);
+        
 	}
 
 	/**
 	 * @param array $newSettings List of settings (as name => value) to update.
-	 * @throws \RuntimeException If a setting is not defined.
+	 * @throws RuntimeException If a setting is not defined.
 	 */
 	public function setMultiple(array $newSettings) {
 		if (empty($newSettings)) {
@@ -116,10 +137,32 @@ class Config {
 
 	/**
 	 * @param string $name Name of the setting.
-	 * @return \RuntimeException
+	 * @return RuntimeException
 	 */
 	protected function createNotFoundException($name) {
-		return new \RuntimeException(sprintf('Setting "%s" couldn\'t be found.', $name));
+		return new RuntimeException(sprintf('Setting "%s" couldn\'t be found.', $name));
 	}
 
+    public function getCacheHandler() {
+        return $this->cacheHandler;
+    }
+
+    public function setCacheHandler(Cache $cacheHandler) {
+        $this->cacheHandler = $cacheHandler;
+        $this->cacheEnabled = TRUE;
+    }
+
+    private function setCache($key, $value){
+        if(!$this->cacheEnabled){
+            return FALSE;
+        }
+        $this->cacheHandler->save($key, $value);
+    }
+    
+    private function getCache($key){
+        if(!$this->cacheEnabled){
+            return FALSE;
+        }
+        return $this->cacheHandler->fetch($key);
+    }
 }
